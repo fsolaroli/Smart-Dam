@@ -84,8 +84,9 @@ function loadData() {
 		}
 	});
 
+	window.setTimeout(loadData, 5000);
 }
 
 document.addEventListener('DOMContentLoaded', function(event) {
 	loadData();
-  })
+})
