@@ -187,7 +187,7 @@ public class ExtendedSerialCommChannel implements CommChannel, SerialPortEventLi
 			if (socket != null && msg != null) {
 				PrintWriter out;
 				try {
-					System.out.println("Arduino to Android: " + msg);
+//					System.out.println("Arduino to Android: " + msg);
 					out = new PrintWriter(socket.getOutputStream(), true);
 					out.println(msg);
 				} catch (IOException e) {
