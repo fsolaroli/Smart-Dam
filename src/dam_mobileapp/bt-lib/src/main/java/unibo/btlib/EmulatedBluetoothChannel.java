@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 
 import unibo.btlib.utils.C;
@@ -33,6 +34,8 @@ public final class EmulatedBluetoothChannel extends BluetoothChannel {
         private final InputStream inputStream;
         private final OutputStream outputStream;
 
+        private volatile boolean isCancelled = false;
+
         TcpWorker(Socket socket) {
             this.socket = socket;
 
@@ -55,7 +58,7 @@ public final class EmulatedBluetoothChannel extends BluetoothChannel {
         }
 
         public void run() {
-            while (true) {
+            while (!isCancelled) {
                 try {
                     DataInputStream input = new DataInputStream(inputStream);
 
@@ -63,7 +66,7 @@ public final class EmulatedBluetoothChannel extends BluetoothChannel {
 
                     byte inputByte;
 
-                    while (input.available() > 0 && (inputByte = input.readByte()) != 0) {
+                    while ((inputByte = input.readByte()) != 0) {
                         char chr = (char) inputByte;
                         if(chr != C.message.MESSAGE_TERMINATOR){
                             readbuffer.append(chr);
@@ -75,8 +78,9 @@ public final class EmulatedBluetoothChannel extends BluetoothChannel {
                             readbuffer = new StringBuffer();
                         }
                     }
-                }
-                catch(Exception e){
+                } catch (SocketException e) {
+                    this.cancel();
+                } catch(Exception e){
                     e.printStackTrace();
                 }
             }
@@ -98,6 +102,7 @@ public final class EmulatedBluetoothChannel extends BluetoothChannel {
 
         public void cancel() {
             try {
+                this.isCancelled = true;
                 socket.close();
             } catch (IOException e) {
                 Log.e(C.LIB_TAG, "Could not close the connect socket", e);
