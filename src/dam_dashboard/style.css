@@ -1,0 +1,18 @@
+html {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+div > span:first-of-type {
+	font-weight: bold;
+}
+
+div.error {
+	color: red;
+	font-weight: bolder;
+}
+
+.line {
+	fill: none;
+	stroke: steelblue;
+	stroke-width: 2px;
+  }
