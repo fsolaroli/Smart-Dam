@@ -80,7 +80,7 @@ public class DamService {
 
     private void parseArduinoMessage(String message) {
         String mode = message.split(":")[0];
-        if (mode == "M") {
+        if (mode.equals("M")) {
             dam.setStatus(MANUAL);
         }
 
@@ -88,7 +88,7 @@ public class DamService {
             String data = message.split(":")[1];
             String dataType = data.split("=")[0];
             String dataValue = data.split("=")[1];
-            if (dataType == "Pm") {
+            if (dataType.equals("Pm")) {
                 this.dam.setDamOpenPercentage(Integer.parseInt(dataValue));
             }
         }
@@ -115,6 +115,8 @@ public class DamService {
     }
 
     private void parseESPMessage(String message) {
+//        System.out.println("From ESP: " + message);
+
         String arduinoMessage = "";
 
         String mode = message.split(":")[0];
@@ -139,16 +141,20 @@ public class DamService {
 
             String dataType = data.split("=")[0];
             String dataValue = data.split("=")[1];
-            if (dataType == "L") {
+
+            if (dataType.equals("L")) {
                 String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).split("\\.")[0];
                 double distance = Double.parseDouble(dataValue);
                 this.dam.addDamLevel(Pair.of(timestamp, distance));
+
                 arduinoMessage += ("L=" + distance + ",");
 
                 if(this.dam.getStatus() != MANUAL) {
                     this.dam.setDamOpenPercentage(this.getDamOpening(distance));
                     arduinoMessage += ("P=" + this.dam.getDamOpenPercentage());
                 }
+            } else {
+                throw new RuntimeException("received dataType=" + dataType + " and dataValue=" + dataValue);
             }
         } else {
             this.dam.setDamOpenPercentage(0);
@@ -165,7 +171,7 @@ public class DamService {
             if(this.dam.getStatus() == MANUAL && serialChannel.isMsgAvailable()) {
                 String message = serialChannel.receiveMsg();
                 System.out.println("From Arduino: " + message);
-                parseESPMessage(message);
+                parseArduinoMessage(message);
             }
         }
 
