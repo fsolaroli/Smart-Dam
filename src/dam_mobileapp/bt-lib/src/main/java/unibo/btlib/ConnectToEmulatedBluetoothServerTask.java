@@ -22,7 +22,7 @@ public final class ConnectToEmulatedBluetoothServerTask extends ConnectionTask {
             e.printStackTrace();
             try {
                 socket.close( );
-            } catch (IOException e1) {
+            } catch (Exception e1) {
                 e1.printStackTrace();
             }
 
