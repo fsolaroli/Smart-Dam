@@ -35,6 +35,12 @@ public class ExtendedSerialCommChannel implements CommChannel, SerialPortEventLi
 		
 		serialPort = new SerialPort(port);
 		try {
+			// emulator server
+
+			androidEmulatorChannel = new AndroidEmulatorCommChannel(localIPportEmu);
+			androidEmulatorChannel.start();
+
+			//serial port
 		    serialPort.openPort();
 
 		    serialPort.setParams(rate,
@@ -42,18 +48,14 @@ public class ExtendedSerialCommChannel implements CommChannel, SerialPortEventLi
 		                         SerialPort.STOPBITS_1,
 		                         SerialPort.PARITY_NONE);
 
-		    serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN | 
+		    serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN |
 		                                  SerialPort.FLOWCONTROL_RTSCTS_OUT);
 
 		    // serialPort.addEventListener(this, SerialPort.MASK_RXCHAR);
 			serialPort.addEventListener(this);
 
 			System.out.println("serial port ok");
-			// emulator server
-			
-			androidEmulatorChannel = new AndroidEmulatorCommChannel(localIPportEmu);
-			androidEmulatorChannel.start();
-			
+
 		} catch (SerialPortException ex) {
 		    System.err.println("Error on writing string to port: " + port);
 		    ex.printStackTrace();
