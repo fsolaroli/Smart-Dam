@@ -1,8 +1,8 @@
 #include "DamOpeningTask.h"
 
-extern int openPercentage;
+extern volatile int openPercentage;
 
-extern int systemState;
+extern volatile int systemState;
 
 DamOpeningTask::DamOpeningTask(ServoMotor* servoMotor) {
 	this->servoMotor = servoMotor;

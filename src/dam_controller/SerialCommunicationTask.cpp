@@ -1,9 +1,9 @@
 #include "SerialCommunicationTask.h"
 
-extern int openPercentage;
+extern volatile int openPercentage;
 extern String damLevel;
 
-extern int systemState;
+extern volatile int systemState;
 
 SerialCommunicationTask::SerialCommunicationTask() {
 }

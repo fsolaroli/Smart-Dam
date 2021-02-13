@@ -10,10 +10,10 @@
 #define GREEN_LED_PIN 11
 #define SERVO_PIN 3
 
-int openPercentage;
+volatile int openPercentage;
 String damLevel;
 
-int systemState;
+volatile int systemState;
 
 Scheduler scheduler;
 

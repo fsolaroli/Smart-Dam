@@ -1,6 +1,6 @@
 #include "BlinkTask.h"
 
-extern int systemState;
+extern volatile int systemState;
 
 BlinkTask::BlinkTask(Led* led) {
 	this->led = led;    
