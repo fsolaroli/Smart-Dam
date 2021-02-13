@@ -7,18 +7,12 @@
     android:orientation="vertical"
     tools:context="unibo.btclientforemulator.MainActivity">
 
-    <Button
-        android:id="@+id/connectBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="CONNECT TO BLUETOOTH SERVER" />
-
     <TextView
         android:id="@+id/statusLabel"
         android:layout_width="match_parent"
         android:layout_height="66dp"
         android:layout_weight="1"
+        android:gravity="center_vertical"
         android:text="Status : not connected"
         android:textAlignment="center" />
 
@@ -31,10 +25,11 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@android:color/darker_gray"
             android:baselineAligned="false"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             android:textAlignment="center">
 
@@ -57,8 +52,9 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             android:textAlignment="center">
 
@@ -81,9 +77,10 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@android:color/darker_gray"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView

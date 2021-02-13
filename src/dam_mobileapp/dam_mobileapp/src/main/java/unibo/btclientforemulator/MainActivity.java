@@ -2,23 +2,26 @@ package unibo.btclientforemulator;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import unibo.btlib.BluetoothChannel;
+import unibo.btlib.CommChannel;
 import unibo.btlib.ConnectToEmulatedBluetoothServerTask;
 import unibo.btlib.ConnectionTask;
 import unibo.btlib.EmulatedBluetoothChannel;
+
+import static unibo.btclientforemulator.ApplicationState.*;
 
 public class MainActivity extends AppCompatActivity {
 
     private BluetoothChannel btChannel;
 
-    private DamStatus currentDamStatus;
-
-    private boolean alreadyConnected = false;
+    private DamStatus currentDamStatus = new DamStatus(DamSystemState.NORMAL, 0, 0);
+    private ApplicationState applicationState = DISCONNECTED;
 
     // .............................................................................................
 
@@ -29,8 +32,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override protected void onPause () {
+        sendMessage("A:");
+        this.applicationState = DISCONNECTED;
         if (btChannel != null) {
-//            btChannel.removeListener();
             btChannel.close();
         }
         super.onPause();
@@ -38,29 +42,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override protected void onResume () {
         super.onResume();
-        if (this.alreadyConnected) {
-            initUI();
-            findViewById(R.id.connectBtn).performClick();
+        if (this.applicationState == DISCONNECTED) {
+            this.connectToBTServer();
         }
+        updateUI(this.currentDamStatus);
     }
 
     // .............................................................................................
 
     private void initUI () {
-        final View      content = findViewById(R.id.content);
-        final View      connectButton = findViewById(R.id.connectBtn);
-
         final Button    manualButton  = findViewById(R.id.manualMode);
         final SeekBar   damOpeningSlider = findViewById(R.id.manualDamOpening);
-
-        content.setVisibility(View.INVISIBLE);
-
-        connectButton.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick (View v) {
-                connectToBTServer(content);
-
-            }
-        });
 
         manualButton.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick (View v) {
@@ -81,15 +73,17 @@ public class MainActivity extends AppCompatActivity {
 
             @Override public void onStopTrackingTouch (SeekBar seekBar) {
                 int currentDamOpening = seekBar.getProgress();
-                updateUI(currentDamStatus.updateOpening(currentDamOpening));
                 sendMessage("M:Pm=" + currentDamOpening);
+                updateUI(currentDamStatus.updateOpening(currentDamOpening));
             }
         });
-
-        updateUI(this.currentDamStatus = new DamStatus(DamSystemState.NORMAL, 0, 0));
     }
 
     private void updateUI (DamStatus damStatus) {
+        final View      content = findViewById(R.id.content);
+
+        final TextView  statusLabel = findViewById(R.id.statusLabel);
+
         final TextView  damStatusValue = findViewById(R.id.systemState);
         final TextView  damLevelValue = findViewById(R.id.damLevel);
         final TextView  damOpeningValue = findViewById(R.id.damOpening);
@@ -107,76 +101,90 @@ public class MainActivity extends AppCompatActivity {
         damOpeningValue.setVisibility(View.VISIBLE);
         damOpeningValue.setText(damStatus.getDamOpenPercentage() + "%");
 
+        switch (applicationState) {
+            case CONNECTED:
+                content.setVisibility(View.INVISIBLE);
+                content.setVisibility(View.VISIBLE);
 
-        switch (damStatus.getSystemState()) {
-            case NORMAL:
-                damLevelValue.setVisibility(View.INVISIBLE);
-                damOpeningValue.setVisibility(View.INVISIBLE);
+                statusLabel.setText(String.format("Status : connected to server on device %s", "host machine"));
 
-                damOpeningSlider.setVisibility(View.INVISIBLE);
+                switch (damStatus.getSystemState()) {
+                    case NORMAL:
+                        damLevelValue.setVisibility(View.INVISIBLE);
+                        damOpeningValue.setVisibility(View.INVISIBLE);
 
-                manualButton.setEnabled(false);
-                manualButton.setText("ENABLE MANUAL MODE");
+                        damOpeningSlider.setVisibility(View.INVISIBLE);
+
+                        manualButton.setEnabled(false);
+                        manualButton.setText("ENABLE MANUAL MODE");
+                        break;
+                    case PRE_ALLARM:
+                        damLevelValue.setVisibility(View.VISIBLE);
+                        damOpeningValue.setVisibility(View.VISIBLE);
+
+                        damOpeningSlider.setVisibility(View.INVISIBLE);
+
+                        manualButton.setEnabled(false);
+                        manualButton.setText("ENABLE MANUAL MODE");
+                        break;
+                    case ALLARM:
+                        damLevelValue.setVisibility(View.VISIBLE);
+                        damOpeningValue.setVisibility(View.VISIBLE);
+
+                        damOpeningSlider.setVisibility(View.INVISIBLE);
+
+                        manualButton.setEnabled(true);
+                        manualButton.setText("ENABLE MANUAL MODE");
+                        break;
+                    case MANUAL:
+                        damLevelValue.setVisibility(View.VISIBLE);
+                        damOpeningValue.setVisibility(View.VISIBLE);
+
+                        damOpeningSlider.setVisibility(View.VISIBLE);
+
+                        manualButton.setText("DISABLE MANUAL MODE");
+                        damOpeningSlider.setProgress(damStatus.getDamOpenPercentage());
+                        manualButton.setEnabled(true);
+                        break;
+                }
                 break;
-            case PRE_ALLARM:
-                damLevelValue.setVisibility(View.VISIBLE);
-                damOpeningValue.setVisibility(View.VISIBLE);
-
-                damOpeningSlider.setVisibility(View.INVISIBLE);
-
-                manualButton.setEnabled(false);
-                manualButton.setText("ENABLE MANUAL MODE");
+            case UNABLE_TO_CONNECT:
+                statusLabel.setText(String.format("Status : unable to connect, device %s not found!", "host machine"));
+                content.setVisibility(View.INVISIBLE);
                 break;
-            case ALLARM:
-                damLevelValue.setVisibility(View.VISIBLE);
-                damOpeningValue.setVisibility(View.VISIBLE);
-
-                damOpeningSlider.setVisibility(View.INVISIBLE);
-
-                manualButton.setEnabled(true);
-                manualButton.setText("ENABLE MANUAL MODE");
-                break;
-            case MANUAL:
-                damLevelValue.setVisibility(View.VISIBLE);
-                damOpeningValue.setVisibility(View.VISIBLE);
-
-                damOpeningSlider.setVisibility(View.VISIBLE);
-
-                manualButton.setText("DISABLE MANUAL MODE");
-                damOpeningSlider.setProgress(damStatus.getDamOpenPercentage());
-                manualButton.setEnabled(true);
+            case DISCONNECTED:
+                statusLabel.setText(String.format("Status : disconnected"));
+                content.setVisibility(View.INVISIBLE);
                 break;
         }
-
     }
 
-    private void connectToBTServer (final View content)  {
+    private void connectToBTServer ()  {
         new ConnectToEmulatedBluetoothServerTask(new ConnectionTask.EventListener() {
-            final TextView  statusLabel = findViewById(R.id.statusLabel);
-
-            @Override public void onConnectionActive (final BluetoothChannel channel) {
-                statusLabel.setText(String.format("Status : connected to server on device %s", "host machine"));
-                findViewById(R.id.connectBtn).setEnabled(false);
-
-                alreadyConnected = true;
-
-                content.setVisibility(View.VISIBLE);
+            @Override
+            public void onConnectionActive(final BluetoothChannel channel) {
+                applicationState = CONNECTED;
+                Log.d("AppState", "CONNECTED");
 
                 btChannel = channel;
                 btChannel.registerListener(new EmulatedBluetoothChannel.Listener() {
-                    @Override public void onMessageReceived (String receivedMessage) {
+                    @Override
+                    public void onMessageReceived(String receivedMessage) {
                         if (receivedMessage != null) {
                             updateUI(currentDamStatus.updateWithMessage(receivedMessage));
                         }
                     }
 
-                    @Override public void onMessageSent (String sentMessage) { }
+                    @Override
+                    public void onMessageSent(String sentMessage) { }
                 });
             }
 
-            @Override public void onConnectionCanceled () {
-                ((TextView) findViewById(R.id.statusLabel)).setText(String.format("Status : unable to connect, device %s not found!", "host machine"));
-                findViewById(R.id.content).setVisibility(View.INVISIBLE);
+            @Override
+            public void onConnectionCanceled() {
+                applicationState = UNABLE_TO_CONNECT;
+                Log.d("AppState", "UNABLE TO CONNECT");
+                updateUI(currentDamStatus);
             }
         }).execute();
     }
