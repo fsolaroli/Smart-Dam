@@ -164,14 +164,20 @@ public class ExtendedSerialCommChannel implements CommChannel, SerialPortEventLi
 		
 		@Override
 		public void run() {
-			try {				
-				socket = server.accept();
-				while(true) {
-					BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					String message = in.readLine();
-					sendMsg(message + BT_MESSAGES_ID);
-					System.out.println("Android to Arduino: " + message);
-		        }
+			try {
+				while (true) {
+					socket = server.accept();
+					while (true) {
+						BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+						String message = in.readLine();
+						if (message != null) {
+							sendMsg(message + BT_MESSAGES_ID);
+							System.out.println("Android to Arduino: " + message);
+						} else {
+							break;
+						}
+					}
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
