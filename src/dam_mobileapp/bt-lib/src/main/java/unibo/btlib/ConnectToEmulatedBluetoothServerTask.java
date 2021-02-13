@@ -20,10 +20,12 @@ public final class ConnectToEmulatedBluetoothServerTask extends ConnectionTask {
             socket = new Socket(InetAddress.getByName(C.emulator.HOST_IP), C.emulator.HOST_PORT);
         } catch (IOException e) {
             e.printStackTrace();
-            try {
-                socket.close( );
-            } catch (Exception e1) {
-                e1.printStackTrace();
+            if (socket != null) {
+                try {
+                    socket.close( );
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
             }
 
             return CONNECTION_CANCELED;
