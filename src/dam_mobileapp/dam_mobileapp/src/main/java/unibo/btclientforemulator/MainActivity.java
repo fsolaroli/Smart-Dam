@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override protected void onPause () {
         sendMessage("A:");
+        this.currentDamStatus.updateSystemState(DamSystemState.ALLARM);
         this.applicationState = DISCONNECTED;
         if (btChannel != null) {
             btChannel.close();
@@ -170,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 btChannel.registerListener(new EmulatedBluetoothChannel.Listener() {
                     @Override
                     public void onMessageReceived(String receivedMessage) {
+                        Log.d("MESSAGE_RECEIVED", "Ricevuto messaggio da Android: " + receivedMessage + ". Stato corrente: " + currentDamStatus.getSystemState().toString());
                         if (receivedMessage != null) {
                             updateUI(currentDamStatus.updateWithMessage(receivedMessage));
                         }
@@ -190,11 +192,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendMessage (final String message){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                btChannel.sendMessage(message);
-            }
-        }).start();
+        if (btChannel != null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    btChannel.sendMessage(message);
+                }
+            }).start();
+//            Log.d("MESSAGE", "sendMessage");
+        }
     }
 }

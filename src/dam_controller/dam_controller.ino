@@ -1,9 +1,14 @@
 #include "BlinkTask.h" 
-#include "BTCommunicationTask.h"
 #include "DamOpeningTask.h"
+
+#include "BTReceiveTask.h"
+#include "BTSendTask.h"
+
+#include "SerialReceiveTask.h"
+#include "SerialSendTask.h"
+
 #include "Led.h"
 #include "Scheduler.h"
-#include "SerialCommunicationTask.h"
 #include "ServoMotor.h"
 #include "SystemState.h"
 
@@ -17,8 +22,6 @@ volatile int systemState;
 
 Scheduler scheduler;
 
-ServoMotor* servoMotor = new ServoMotor(SERVO_PIN);
-
 void setup() {
 	systemState = NORMAL;
 	openPercentage = 0;
@@ -28,22 +31,31 @@ void setup() {
 	BlinkTask* blinkTask = new BlinkTask(greenLed);
 	blinkTask->init(1000);
 
-	// ServoMotor* servoMotor = new ServoMotor(SERVO_PIN);
+	ServoMotor* servoMotor = new ServoMotor(SERVO_PIN);
 	DamOpeningTask* damOpeningTask = new DamOpeningTask(servoMotor);
-	damOpeningTask->init(500);
+	damOpeningTask->init(1000);
 
-	BTCommunicationTask* btCommunicationTask = new BTCommunicationTask();
-	btCommunicationTask->init(3000);
+	BTReceiveTask* btReceiveTask = new BTReceiveTask();
+	btReceiveTask->init(1000);
 
-	SerialCommunicationTask* serialCommunicationTask = new SerialCommunicationTask();
-	serialCommunicationTask->init(3000);
+	BTSendTask* btSendTask = new BTSendTask();
+	btSendTask->init(5000);
 
-	scheduler.init(500);
+	SerialReceiveTask* serialReceiveTask = new SerialReceiveTask();
+	serialReceiveTask->init(5000);
 
-	scheduler.addTask(btCommunicationTask);
-	scheduler.addTask(serialCommunicationTask);
-	scheduler.addTask(damOpeningTask);
+	SerialSendTask* serialSendTask = new SerialSendTask();
+	serialSendTask->init(1000);
+
+	scheduler.init(1000);
+
+	scheduler.addTask(btReceiveTask);
+	scheduler.addTask(serialSendTask);
+	scheduler.addTask(serialReceiveTask);
+	scheduler.addTask(btSendTask);
+
 	scheduler.addTask(blinkTask);
+	scheduler.addTask(damOpeningTask);
 
 }
 

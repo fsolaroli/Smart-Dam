@@ -1,15 +1,15 @@
-#ifndef __SERIAL_COMMUNICATION_TASK__
-#define __SERIAL_COMMUNICATION_TASK__
+#ifndef __SERIAL_SEND_TASK__
+#define __SERIAL_SEND_TASK__
 
 #include "Task.h"
 #include "SystemState.h"
 #include "MsgService.h"
 #include "Arduino.h"
 
-class SerialCommunicationTask: public Task {
+class SerialSendTask: public Task {
 
 	public:
-		SerialCommunicationTask();
+		SerialSendTask();
 		void init(int period);
 		void tick();
 

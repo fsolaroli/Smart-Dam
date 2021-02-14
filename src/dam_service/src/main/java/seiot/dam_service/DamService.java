@@ -1,5 +1,6 @@
 package seiot.dam_service;
 
+import com.google.common.base.Strings;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.Vertx;
 import io.vertx.mqtt.MqttServer;
@@ -16,6 +17,7 @@ public class DamService {
 //    private static final double D1 = 1;
     private static final double D2 = 0.4;
     private static final double DeltaD = 0.04;
+    private static final double DamHeight = 5.0;
 
     private Dam dam;
 
@@ -35,7 +37,7 @@ public class DamService {
 
     private void commChannelInit() throws Exception {
         String serialPortName = "/dev/cu.usbmodem14201";
-        serialChannel = new ExtendedSerialCommChannel(serialPortName, 9600, 80);
+        serialChannel = new ExtendedSerialCommChannel(serialPortName, 115200, 80);
     }
 
     private void mqttInit() {
@@ -52,7 +54,7 @@ public class DamService {
 
                 String messageContent = message.payload().toString(Charset.defaultCharset());
 
-                System.out.println(messageContent);
+//                System.out.println(messageContent);
 
                 parseESPMessage(messageContent);
 
@@ -82,6 +84,8 @@ public class DamService {
         String mode = message.split(":")[0];
         if (mode.equals("M")) {
             dam.setStatus(MANUAL);
+        } else {
+            throw new IllegalArgumentException();
         }
 
         if (message.split(":").length > 1) {
@@ -90,7 +94,11 @@ public class DamService {
             String dataValue = data.split("=")[1];
             if (dataType.equals("Pm")) {
                 this.dam.setDamOpenPercentage(Integer.parseInt(dataValue));
+            } else {
+                throw new IllegalArgumentException();
             }
+        } else {
+            throw new IllegalArgumentException();
         }
     }
 
@@ -145,9 +153,10 @@ public class DamService {
             if (dataType.equals("L")) {
                 String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).split("\\.")[0];
                 double distance = Double.parseDouble(dataValue);
-                this.dam.addDamLevel(Pair.of(timestamp, distance));
+                double damLevel = this.DamHeight - distance;
+                this.dam.addDamLevel(Pair.of(timestamp, damLevel));
 
-                arduinoMessage += ("L=" + distance + ",");
+                arduinoMessage += ("L=" + damLevel + ",");
 
                 if(this.dam.getStatus() != MANUAL) {
                     this.dam.setDamOpenPercentage(this.getDamOpening(distance));
@@ -160,18 +169,21 @@ public class DamService {
             this.dam.setDamOpenPercentage(0);
         }
 
+        System.out.println(">>> To Arduino: '" + arduinoMessage + "'");
         serialChannel.sendMsg(arduinoMessage);
-//        System.out.println("Sending to Arduino: '" + arduinoMessage + "'");
+        System.out.println("<<< To Arduino: '" + arduinoMessage + "'");
 
     }
 
     public void run() throws Exception {
         mqttConnection();
         while(true) {
-            if(this.dam.getStatus() == MANUAL && serialChannel.isMsgAvailable()) {
+            if(serialChannel.isMsgAvailable()) {
                 String message = serialChannel.receiveMsg();
-                System.out.println("From Arduino: " + message);
-                parseArduinoMessage(message);
+//                System.out.println("From Arduino: " + message);
+                if (!Strings.isNullOrEmpty(message)) {
+                    parseArduinoMessage(message);
+                }
             }
         }
 

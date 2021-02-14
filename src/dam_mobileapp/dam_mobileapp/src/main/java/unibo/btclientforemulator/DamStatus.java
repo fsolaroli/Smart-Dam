@@ -1,5 +1,7 @@
 package unibo.btclientforemulator;
 
+import android.util.Log;
+
 import java.util.regex.Pattern;
 
 public class DamStatus {
@@ -24,11 +26,6 @@ public class DamStatus {
     public double getDamLevel() {
        return this.damLevel;
     }
-
-//    public DamStatus updateLevel (double level) {
-//        this.damLevel = level;
-//        return this;
-//    }
 
     public DamStatus updateOpening (int openin) {
         this.damOpenPercentage = openin;
@@ -66,6 +63,8 @@ public class DamStatus {
             if (this.damSystemState != DamSystemState.MANUAL) {
                 this.damSystemState = status;
                 this.damOpenPercentage = Integer.parseInt(data.split(",")[1].substring(2));
+            } else {
+                Log.d("DEBUG", "Modalità manuale. Ignorato messaggio: " + message);
             }
 
             this.damLevel = Double.parseDouble(data.split(",")[0].substring(2));

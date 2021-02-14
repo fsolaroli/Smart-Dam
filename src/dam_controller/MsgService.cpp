@@ -23,7 +23,7 @@ Msg* MsgServiceSerial::receiveMsg(){
 }
 
 void MsgServiceSerial::init(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   content.reserve(128);
   content = "";
   currentMsg = NULL;
@@ -51,7 +51,7 @@ Msg* MsgServiceBluetooth::receiveMsg(){
 }
 
 void MsgServiceBluetooth::init(){
-  Serial.begin(9600);
+  Serial.begin(115200);
   content.reserve(128);
   content = "";
   currentMsg = NULL;

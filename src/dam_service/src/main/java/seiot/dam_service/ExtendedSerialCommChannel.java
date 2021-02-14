@@ -1,10 +1,13 @@
 package seiot.dam_service;
 
+import com.google.common.base.Strings;
 import seiot.dam_service.CommChannel;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.*;
 import jssc.*;
 
@@ -129,10 +132,14 @@ public class ExtendedSerialCommChannel implements CommChannel, SerialPortEventLi
         				String msg2 = currentMsg.toString();
         				int index = msg2.indexOf("\n");
             			if (index >= 0) {
-            				
-            				if(msg2.getBytes().length > 1 && msg2.getBytes()[index - 1] == BT_MESSAGES_ID) {
+
+							System.out.println("> Arduino > Java: " + Arrays.toString(msg2.getBytes(StandardCharsets.UTF_8)));
+
+							if(msg2.getBytes().length > 1 && msg2.getBytes()[index - 1] == BT_MESSAGES_ID) {
+								System.out.println("> Arduino ==> Android: " + msg2);
             					androidEmulatorChannel.sendMsgToAndroidEmulator(msg2.substring(0, index - 1));
             				} else {
+								System.out.println("> Arduino --> Java: " + msg2);
             					queue.put(msg2.substring(0, index));
             				}
             				
@@ -170,10 +177,13 @@ public class ExtendedSerialCommChannel implements CommChannel, SerialPortEventLi
 					while (true) {
 						BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 						String message = in.readLine();
+						System.out.println("> Android --> Java: " + message);
 						if (message != null) {
+							System.out.println("--> Android ==> Arduino: " + message);
 							sendMsg(message + BT_MESSAGES_ID);
-							System.out.println("Android to Arduino: " + message);
+							System.out.println("<-- Android ==> Arduino : " + message);
 						} else {
+							System.out.println("X Android --> Java: break");
 							break;
 						}
 					}
@@ -184,15 +194,18 @@ public class ExtendedSerialCommChannel implements CommChannel, SerialPortEventLi
 		}
 
 		public void sendMsgToAndroidEmulator(String msg) {
-			if (socket != null && msg != null) {
+			if (socket != null && !Strings.isNullOrEmpty(msg)) {
 				PrintWriter out;
 				try {
 //					System.out.println("Arduino to Android: " + msg);
 					out = new PrintWriter(socket.getOutputStream(), true);
 					out.println(msg);
+//					out.checkError();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			} else {
+				System.out.println("LOST message to Android: " + msg + ", socket: " + socket);
 			}
 		}
 	}

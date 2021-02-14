@@ -1,36 +1,34 @@
-#include "SerialCommunicationTask.h"
+#include "SerialReceiveTask.h"
 
 extern volatile int openPercentage;
 extern String damLevel;
 
 extern volatile int systemState;
 
-SerialCommunicationTask::SerialCommunicationTask() {
+SerialReceiveTask::SerialReceiveTask() {
 }
 
-void SerialCommunicationTask::init(int period) {
+void SerialReceiveTask::init(int period) {
   	Task::init(period);
   	MsgService.init(); 
 }
 
-void SerialCommunicationTask::tick() {
-	if (systemState == MANUAL) {
-		MsgService.sendMsg("M:Pm=" + openPercentage);
-	}
-
+void SerialReceiveTask::tick() {
 	if(MsgService.isMsgAvailable()) {
 		Msg* message = MsgService.receiveMsg();
 		String content = message->getContent();
 		
-		String state = content.substring(0, content.indexOf(":"));
 		if(systemState != MANUAL) {
-			if (state == "N") {
+			String state = content.substring(0, content.indexOf(":"));
+			if (state.equals("N")) {
 				systemState = NORMAL;
 				openPercentage = 0;
-			} else if (state == "P") {
+			} else if (state.equals("P")) {
 				systemState = PRE_ALLARM;				
-			} else if (state == "A") {
+			} else if (state.equals("A")) {
 				systemState = ALLARM;
+			} else if (state.equals("M")) {
+				systemState = MANUAL;
 			}
 		}
 		
@@ -38,18 +36,18 @@ void SerialCommunicationTask::tick() {
 			String data = content.substring(content.indexOf(":") + 1);
 			
 			String level = data.substring(0, data.indexOf(","));
-			if (level.substring(0, level.indexOf("=")) == "L") {
+			if (level.substring(0, level.indexOf("=")).equals("L")) {
 				damLevel = level.substring(level.indexOf("=") + 1);
 			}
 
 			if(data.indexOf(",") != data.length() - 1) {
 				String percentage = data.substring(data.indexOf(",") + 1);
-				if (percentage.substring(0, percentage.indexOf("=")) == "P" && systemState != MANUAL) {
+				if (systemState != MANUAL && percentage.substring(0, percentage.indexOf("=")).equals("P")) {
 					openPercentage = percentage.substring(percentage.indexOf("=") + 1).toInt();
-				}	
+				}
 			}
 		}
 
-		delete message;
+		delete message;		
 	}
 }
