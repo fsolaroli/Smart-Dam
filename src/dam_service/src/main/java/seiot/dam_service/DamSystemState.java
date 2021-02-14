@@ -3,8 +3,7 @@ package seiot.dam_service;
 public enum DamSystemState {
     NORMAL("Normal"),
     PRE_ALLARM("Pre-Allarm"),
-    ALLARM("Allarm"),
-    MANUAL("Manual");
+    ALLARM("Allarm");
 
     private String state;
 

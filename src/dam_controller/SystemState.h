@@ -4,8 +4,7 @@
 enum SYSTEM_STATE {
 	NORMAL,
 	PRE_ALLARM,
-	ALLARM,
-	MANUAL
+	ALLARM
 };
 
 #endif

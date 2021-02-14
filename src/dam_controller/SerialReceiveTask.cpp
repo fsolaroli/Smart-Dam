@@ -3,7 +3,10 @@
 extern volatile int openPercentage;
 extern String damLevel;
 
+extern String message;
+
 extern volatile int systemState;
+extern volatile int manualState;
 
 SerialReceiveTask::SerialReceiveTask() {
 }
@@ -15,21 +18,18 @@ void SerialReceiveTask::init(int period) {
 
 void SerialReceiveTask::tick() {
 	if(MsgService.isMsgAvailable()) {
-		Msg* message = MsgService.receiveMsg();
-		String content = message->getContent();
+		Msg* messageArrived = MsgService.receiveMsg();
+		String content = messageArrived->getContent();
+		message = content;
 		
-		if(systemState != MANUAL) {
-			String state = content.substring(0, content.indexOf(":"));
-			if (state.equals("N")) {
-				systemState = NORMAL;
-				openPercentage = 0;
-			} else if (state.equals("P")) {
-				systemState = PRE_ALLARM;				
-			} else if (state.equals("A")) {
-				systemState = ALLARM;
-			} else if (state.equals("M")) {
-				systemState = MANUAL;
-			}
+		String state = content.substring(0, content.indexOf(":"));
+		if (state.equals("N")) {
+			systemState = NORMAL;
+			openPercentage = 0;
+		} else if (state.equals("P")) {
+			systemState = PRE_ALLARM;				
+		} else if (state.equals("A")) {
+			systemState = ALLARM;
 		}
 		
 		if(content.indexOf(":") != content.length() - 1) {
@@ -42,12 +42,12 @@ void SerialReceiveTask::tick() {
 
 			if(data.indexOf(",") != data.length() - 1) {
 				String percentage = data.substring(data.indexOf(",") + 1);
-				if (systemState != MANUAL && percentage.substring(0, percentage.indexOf("=")).equals("P")) {
+				if (manualState != MANUAL && percentage.substring(0, percentage.indexOf("=")).equals("P")) {
 					openPercentage = percentage.substring(percentage.indexOf("=") + 1).toInt();
 				}
 			}
 		}
 
-		delete message;		
+		delete messageArrived;		
 	}
 }

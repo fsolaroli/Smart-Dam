@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     private BluetoothChannel btChannel;
 
-    private DamStatus currentDamStatus = new DamStatus(DamSystemState.NORMAL, 0, 0);
+    private DamStatus currentDamStatus = new DamStatus();
     private ApplicationState applicationState = DISCONNECTED;
 
     // .............................................................................................
@@ -32,8 +32,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override protected void onPause () {
-        sendMessage("A:");
-        this.currentDamStatus.updateSystemState(DamSystemState.ALLARM);
+        sendMessage("EM:");
+        this.currentDamStatus.updateIsManual(false);
         this.applicationState = DISCONNECTED;
         if (btChannel != null) {
             btChannel.close();
@@ -57,12 +57,12 @@ public class MainActivity extends AppCompatActivity {
 
         manualButton.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick (View v) {
-                if (currentDamStatus.getSystemState() == DamSystemState.MANUAL) {
-                    sendMessage("A:");
-                    updateUI(currentDamStatus.updateSystemState(DamSystemState.ALLARM));
+                if (currentDamStatus.isManual()) {
+                    sendMessage("EM:");
+                    updateUI(currentDamStatus.updateIsManual(false));
                 } else {
+                    updateUI(currentDamStatus.updateIsManual(true));
                     sendMessage("M:Pm=" + currentDamStatus.getDamOpenPercentage());
-                    updateUI(currentDamStatus.updateSystemState(DamSystemState.MANUAL));
                 }
             }
         });
@@ -92,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
         final SeekBar   damOpeningSlider = findViewById(R.id.manualDamOpening);
         final Button    manualButton  = findViewById(R.id.manualMode);
 
-        damStatusValue.setText(damStatus.getSystemState().toString());
-
         damLevelValue.setVisibility(View.INVISIBLE);
         damLevelValue.setVisibility(View.VISIBLE);
         damLevelValue.setText(damStatus.getDamLevel() + "m");
@@ -109,44 +107,39 @@ public class MainActivity extends AppCompatActivity {
 
                 statusLabel.setText(String.format("Status : connected to server on device %s", "host machine"));
 
-                switch (damStatus.getSystemState()) {
-                    case NORMAL:
-                        damLevelValue.setVisibility(View.INVISIBLE);
-                        damOpeningValue.setVisibility(View.INVISIBLE);
+                if (currentDamStatus.isManual()) {
+                    damOpeningSlider.setVisibility(View.VISIBLE);
 
-                        damOpeningSlider.setVisibility(View.INVISIBLE);
+                    manualButton.setText("DISABLE MANUAL MODE");
+                    damStatusValue.setText("Manual");
 
-                        manualButton.setEnabled(false);
-                        manualButton.setText("ENABLE MANUAL MODE");
-                        break;
-                    case PRE_ALLARM:
-                        damLevelValue.setVisibility(View.VISIBLE);
-                        damOpeningValue.setVisibility(View.VISIBLE);
+                    damOpeningSlider.setProgress(damStatus.getDamOpenPercentage());
+                } else {
+                    damOpeningSlider.setVisibility(View.INVISIBLE);
 
-                        damOpeningSlider.setVisibility(View.INVISIBLE);
+                    manualButton.setText("ENABLE MANUAL MODE");
+                    damStatusValue.setText(damStatus.getSystemState().toString());
 
-                        manualButton.setEnabled(false);
-                        manualButton.setText("ENABLE MANUAL MODE");
-                        break;
-                    case ALLARM:
-                        damLevelValue.setVisibility(View.VISIBLE);
-                        damOpeningValue.setVisibility(View.VISIBLE);
+                    switch (damStatus.getSystemState()) {
+                        case NORMAL:
+                            damLevelValue.setVisibility(View.INVISIBLE);
+                            damOpeningValue.setVisibility(View.INVISIBLE);
 
-                        damOpeningSlider.setVisibility(View.INVISIBLE);
+                            manualButton.setEnabled(false);
+                            break;
+                        case PRE_ALLARM:
+                            damLevelValue.setVisibility(View.VISIBLE);
+                            damOpeningValue.setVisibility(View.VISIBLE);
 
-                        manualButton.setEnabled(true);
-                        manualButton.setText("ENABLE MANUAL MODE");
-                        break;
-                    case MANUAL:
-                        damLevelValue.setVisibility(View.VISIBLE);
-                        damOpeningValue.setVisibility(View.VISIBLE);
+                            manualButton.setEnabled(false);
+                            break;
+                        case ALLARM:
+                            damLevelValue.setVisibility(View.VISIBLE);
+                            damOpeningValue.setVisibility(View.VISIBLE);
 
-                        damOpeningSlider.setVisibility(View.VISIBLE);
-
-                        manualButton.setText("DISABLE MANUAL MODE");
-                        damOpeningSlider.setProgress(damStatus.getDamOpenPercentage());
-                        manualButton.setEnabled(true);
-                        break;
+                            manualButton.setEnabled(true);
+                            break;
+                    }
                 }
                 break;
             case UNABLE_TO_CONNECT:

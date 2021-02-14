@@ -3,6 +3,7 @@
 
 #include "Task.h"
 #include "SystemState.h"
+#include "ManualState.h"
 #include "MsgService.h"
 #include "Arduino.h"
 

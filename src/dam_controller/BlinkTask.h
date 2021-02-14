@@ -4,6 +4,7 @@
 #include "Task.h"
 #include "Led.h"
 #include "SystemState.h"
+#include "ManualState.h"
 
 class BlinkTask: public Task {
 

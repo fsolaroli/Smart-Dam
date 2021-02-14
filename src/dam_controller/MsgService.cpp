@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "MsgService.h"
 
-String content;
+// String content;
 
 MsgServiceSerial MsgService;
 MsgServiceBluetooth MsgServiceBT;
@@ -15,7 +15,7 @@ Msg* MsgServiceSerial::receiveMsg(){
     Msg* msg = currentMsg;
     msgAvailable = false;
     currentMsg = NULL;
-    content = "";
+    // content = "";
     return msg;  
   } else {
     return NULL; 
@@ -24,8 +24,8 @@ Msg* MsgServiceSerial::receiveMsg(){
 
 void MsgServiceSerial::init(){
   Serial.begin(115200);
-  content.reserve(128);
-  content = "";
+//   content.reserve(128);
+//   content = "";
   currentMsg = NULL;
   msgAvailable = false;  
 }
@@ -43,7 +43,7 @@ Msg* MsgServiceBluetooth::receiveMsg(){
     Msg* msg = currentMsg;
     msgAvailable = false;
     currentMsg = NULL;
-    content = "";
+    // content = "";
     return msg;  
   } else {
     return NULL; 
@@ -52,8 +52,8 @@ Msg* MsgServiceBluetooth::receiveMsg(){
 
 void MsgServiceBluetooth::init(){
   Serial.begin(115200);
-  content.reserve(128);
-  content = "";
+//   content.reserve(128);
+//   content = "";
   currentMsg = NULL;
   msgAvailable = false;  
 }
@@ -63,23 +63,27 @@ void MsgServiceBluetooth::sendMsg(const String& msg){
 }
 
 void serialEvent() {
-  /* reading the content */
-  while (Serial.available()) {
-    char ch = (char) Serial.read();
-    if (ch == '\n'){      
-      if (content.length() > 0) {
-        int index = content.indexOf('$');        
-        if (index != -1){
-          content = content.substring(0,index);
-          MsgServiceBT.currentMsg = new Msg(content);
-          MsgServiceBT.msgAvailable = true;      
-        } else {
-          MsgService.currentMsg = new Msg(content);
-          MsgService.msgAvailable = true;      
-        }
-      }
-    } else {
-      content += ch;      
-    }
-  }
+	String content;
+	content.reserve(128);
+	content = "";
+	/* reading the content */
+	while (Serial.available()) {
+		char ch = (char) Serial.read();
+		if (ch == '\n'){      
+			if (content.length() > 0) {
+				int index = content.indexOf('$');        
+				if (index != -1){
+					content = content.substring(0,index);
+					MsgServiceBT.currentMsg = new Msg(content);
+					MsgServiceBT.msgAvailable = true;
+				} else {
+					MsgService.currentMsg = new Msg(content);
+					MsgService.msgAvailable = true;
+				}
+				content = "";   
+			}
+		} else {
+			content += ch;
+		}
+	}
 }

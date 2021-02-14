@@ -1,6 +1,7 @@
 #include "BlinkTask.h"
 
 extern volatile int systemState;
+extern volatile int manualState;
 
 BlinkTask::BlinkTask(Led* led) {
 	this->led = led;    
@@ -12,17 +13,18 @@ void BlinkTask::init(int period) {
 }
 
 void BlinkTask::tick() {
-	switch (systemState) {
-	case NORMAL:
-	case PRE_ALLARM:
-		this->led->switchOff();
-		break;
-	case ALLARM:
-		this->blink();
-		break;
-	case MANUAL:
+	if (manualState != AUTO) {
 		this->led->switchOn();
-		break;
+	} else {
+		switch (systemState) {
+		case NORMAL:
+		case PRE_ALLARM:
+			this->led->switchOff();
+			break;
+		case ALLARM:
+			this->blink();
+			break;
+		}
 	}
 }
 

@@ -13,6 +13,7 @@ public class Dam {
 
     private List<Pair<String, Double>> damLevels;
     private DamSystemState status;
+    private boolean isManual;
     private int damOpenPercentage;
     private int Nril;
 
@@ -21,6 +22,7 @@ public class Dam {
         damLevels = new LinkedList<>();
         damOpenPercentage = 0;
         status = NORMAL;
+        isManual = false;
     }
 
     public DamSystemState getStatus() {
@@ -43,20 +45,27 @@ public class Dam {
         damLevels.add(newLevel);
     }
 
+    public boolean isManual() {
+        return this.isManual;
+    }
+
+    public void setManual(boolean isManual) {
+        this.isManual = isManual;
+    }
+
     public JsonObject getHTTPRequestData() {
 
         JsonArray levelData = new JsonArray();
 
-        damLevels.subList(Math.max(0, damLevels.size() - Nril), damLevels.size()).forEach( pair -> {
+        this.damLevels.subList(Math.max(0, this.damLevels.size() - this.Nril), this.damLevels.size()).forEach( pair -> {
             levelData.add(new JsonObject().put("time", pair.getLeft()).put("value", pair.getRight()));
         });
 
         JsonObject damJSON = new JsonObject()
-                .put("Status", status.toString())
-                .put("DamOpenPercentage", damOpenPercentage)
+                .put("Status", this.isManual() ? "Manual" : this.status.toString())
+                .put("DamOpenPercentage", this.damOpenPercentage)
                 .put("DamLevelData", levelData);
 
         return damJSON;
     }
-
 }

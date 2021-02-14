@@ -82,10 +82,13 @@ public class DamService {
 
     private void parseArduinoMessage(String message) {
         String mode = message.split(":")[0];
-        if (mode.equals("M")) {
-            dam.setStatus(MANUAL);
-        } else {
-            throw new IllegalArgumentException();
+        switch (mode) {
+            case "M":
+                this.dam.setManual(true);
+                break;
+            case "EM":
+                this.dam.setManual(false);
+                break;
         }
 
         if (message.split(":").length > 1) {
@@ -97,8 +100,6 @@ public class DamService {
             } else {
                 throw new IllegalArgumentException();
             }
-        } else {
-            throw new IllegalArgumentException();
         }
     }
 
@@ -128,19 +129,19 @@ public class DamService {
         String arduinoMessage = "";
 
         String mode = message.split(":")[0];
-        if (this.dam.getStatus() != MANUAL) {
-            switch (mode) {
-                case "N" :
-                    dam.setStatus(NORMAL);
-                    break;
-                case "P" :
-                    dam.setStatus(PRE_ALLARM);
-                    break;
-                case "A" :
-                    dam.setStatus(ALLARM);
-                    break;
-            }
+
+        switch (mode) {
+            case "N" :
+                dam.setStatus(NORMAL);
+                break;
+            case "P" :
+                dam.setStatus(PRE_ALLARM);
+                break;
+            case "A" :
+                dam.setStatus(ALLARM);
+                break;
         }
+
         arduinoMessage += (mode + ":");
 
         if (message.split(":").length > 1) {
@@ -156,12 +157,11 @@ public class DamService {
                 double damLevel = this.DamHeight - distance;
                 this.dam.addDamLevel(Pair.of(timestamp, damLevel));
 
-                arduinoMessage += ("L=" + damLevel + ",");
-
-                if(this.dam.getStatus() != MANUAL) {
+                if(!this.dam.isManual()) {
                     this.dam.setDamOpenPercentage(this.getDamOpening(distance));
-                    arduinoMessage += ("P=" + this.dam.getDamOpenPercentage());
                 }
+
+                arduinoMessage += ("L=" + damLevel + ",P=" + this.dam.getDamOpenPercentage());
             } else {
                 throw new RuntimeException("received dataType=" + dataType + " and dataValue=" + dataValue);
             }

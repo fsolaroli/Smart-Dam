@@ -3,6 +3,7 @@
 
 #include "Task.h"
 #include "SystemState.h"
+#include "ManualState.h"
 #include "MsgService.h"
 
 class BTReceiveTask: public Task {

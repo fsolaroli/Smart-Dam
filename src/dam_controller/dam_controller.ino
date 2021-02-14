@@ -11,6 +11,7 @@
 #include "Scheduler.h"
 #include "ServoMotor.h"
 #include "SystemState.h"
+#include "ManualState.h"
 
 #define GREEN_LED_PIN 11
 #define SERVO_PIN 3
@@ -18,12 +19,18 @@
 volatile int openPercentage;
 String damLevel;
 
+String message;
+
 volatile int systemState;
+volatile int manualState;
 
 Scheduler scheduler;
 
 void setup() {
 	systemState = NORMAL;
+	manualState = AUTO;
+	
+	message = "N:L=0,P=0";
 	openPercentage = 0;
 	damLevel = "0";
 

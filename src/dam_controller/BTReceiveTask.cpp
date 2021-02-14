@@ -4,6 +4,7 @@ extern volatile int openPercentage;
 extern String damLevel;
 
 extern volatile int systemState;
+extern volatile int manualState;
 
 BTReceiveTask::BTReceiveTask() {
 }
@@ -21,15 +22,15 @@ void BTReceiveTask::tick() {
 			
 			String state = content.substring(0, content.indexOf(":"));
 			if (state.equals("M")) {
-				systemState = MANUAL;
+				manualState = MANUAL;
 
 				String data = content.substring(content.indexOf(":") + 1);
-									
+
 				if (data.substring(0, data.indexOf("=")).equals("Pm")) {
 					openPercentage = data.substring(data.indexOf("=") + 1).toInt();
 				}
-			} else if (state.equals("A")) {
-				systemState = ALLARM;
+			} else if (state.equals("EM")) {
+				manualState = EXIT_MANUAL;
 			}
 		}
 		delete message;
