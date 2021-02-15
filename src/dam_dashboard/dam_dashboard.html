@@ -13,6 +13,23 @@
 		<h1>Dam Dashboard</h1>
 	</header>
 	<main id="main">
+		<div class="error">Server offline</div>
+		<div class ="content">
+			<div>
+				<span>System State: </span>
+				<span id ="state"></span>
+			</div>
+			<div id="graph">
+			</div>
+				<div>
+					<span>Dam Opening Percentage: </span>
+					<span id="opening"></span>
+				</div>
+				<svg width=100% height="50">
+					<rect width="100%" height="100%" style="fill:transparent;stroke-width:3;stroke:black" />
+					<rect id="opening-bar" width="0" height="100" style="fill:grey;stroke-width:3;stroke:black" />
+				</svg>
+			</div>
 	</main>
 </body>
 </html>
