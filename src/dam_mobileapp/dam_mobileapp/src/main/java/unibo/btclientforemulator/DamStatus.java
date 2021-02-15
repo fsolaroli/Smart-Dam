@@ -71,7 +71,7 @@ public class DamStatus {
                 String data = message.split(":")[1];
 
                 this.damLevel = Double.parseDouble(data.split(",")[0].substring(2));
-                
+
                 if (!this.isManual()) {
                     this.damOpenPercentage = Integer.parseInt(data.split(",")[1].substring(2));
                 } else {

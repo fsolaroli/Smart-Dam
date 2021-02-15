@@ -6,6 +6,8 @@ import io.vertx.core.Vertx;
 import io.vertx.mqtt.MqttServer;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
@@ -37,7 +39,7 @@ public class DamService {
 
     private void commChannelInit() throws Exception {
         String serialPortName = "/dev/cu.usbmodem14201";
-        serialChannel = new ExtendedSerialCommChannel(serialPortName, 115200, 80);
+        serialChannel = new ExtendedSerialCommChannel(serialPortName, 115200, 88);
     }
 
     private void mqttInit() {
@@ -153,7 +155,9 @@ public class DamService {
 
             if (dataType.equals("L")) {
                 String timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME).split("\\.")[0];
-                double distance = Double.parseDouble(dataValue);
+                double distance = BigDecimal.valueOf(Double.parseDouble(dataValue))
+                                            .setScale(2, RoundingMode.HALF_UP)
+                                            .doubleValue();
                 double damLevel = this.DamHeight - distance;
                 this.dam.addDamLevel(Pair.of(timestamp, damLevel));
 

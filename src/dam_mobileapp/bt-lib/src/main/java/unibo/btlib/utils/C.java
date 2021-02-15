@@ -14,6 +14,6 @@ public class C {
 
     public class emulator {
         public static final String HOST_IP = "192.168.178.25";
-        public static final int HOST_PORT = 80;
+        public static final int HOST_PORT = 88;
     }
 }
