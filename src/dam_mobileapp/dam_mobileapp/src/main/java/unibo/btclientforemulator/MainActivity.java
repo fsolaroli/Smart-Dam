@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     damOpeningSlider.setVisibility(View.VISIBLE);
 
                     manualButton.setText("DISABLE MANUAL MODE");
-                    damStatusValue.setText("Manual");
+                    damStatusValue.setText(damStatus.getSystemState().toString() + " Manual");
 
                     damOpeningSlider.setProgress(damStatus.getDamOpenPercentage());
                 } else {
@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
                             break;
                         case PRE_ALLARM:
                             damLevelValue.setVisibility(View.VISIBLE);
-                            damOpeningValue.setVisibility(View.VISIBLE);
+                            damOpeningValue.setVisibility(View.INVISIBLE);
 
                             manualButton.setEnabled(false);
                             break;
@@ -192,7 +192,6 @@ public class MainActivity extends AppCompatActivity {
                     btChannel.sendMessage(message);
                 }
             }).start();
-//            Log.d("MESSAGE", "sendMessage");
         }
     }
 }

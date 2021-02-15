@@ -62,7 +62,7 @@ public class Dam {
         });
 
         JsonObject damJSON = new JsonObject()
-                .put("Status", this.isManual() ? "Manual" : this.status.toString())
+                .put("Status", this.status.toString() + (this.isManual() ? " Manual" : ""))
                 .put("DamOpenPercentage", this.damOpenPercentage)
                 .put("DamLevelData", levelData);
 

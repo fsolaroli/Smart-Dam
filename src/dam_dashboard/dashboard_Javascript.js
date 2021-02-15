@@ -162,16 +162,29 @@ function loadData() {
 		} else {
 			d3.select(".error").style("visibility", "hidden");
 			d3.select(".content").style("visibility", "visible");
-			document.getElementById("graph").innerHTML = "";
 			
 			d3.select("#state").text(data.Status);
+			
+			document.getElementById("graph").innerHTML = "";
+			drawGraph(data.DamLevelData);
+			if (data.Status.includes("Allarm") || data.Status.includes("Manual")) {
+				d3.select("#graph").style("visibility", "visible");
+			} else {
+				d3.select("#graph").style("visibility", "hidden");
+			}
+			
 			d3.select("#opening").text(data.DamOpenPercentage + "%");
 			d3.select("#opening-bar")
 				.transition()
 				.duration(2000)
 				.attr("width", data.DamOpenPercentage + "%")
+			if (data.Status == "Allarm" || data.Status.includes("Manual")) {
+				d3.select("#openingContainer").style("visibility", "visible");
+			} else {
+				d3.select("#openingContainer").style("visibility", "hidden");
+			}
 
-			if(data.Status == "Manual") {
+			if(data.Status.includes("Manual")) {
 				d3.select("#opening-bar").style("fill", "red");
 			} else {
 				d3.select("#opening-bar").style("fill", "grey");
@@ -179,7 +192,6 @@ function loadData() {
 
 			console.log(data);
 
-			drawGraph(data.DamLevelData);
 
 		}
 	});
