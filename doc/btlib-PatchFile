@@ -1,0 +1,82 @@
+diff -ruN /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Laboratorio/Android/seiot2021-android-workspace/AndroidBluetoothEx/bt-lib/src/main/java/unibo/btlib/ConnectToEmulatedBluetoothServerTask.java /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Progetti/Progetto-03/src/dam_mobileapp/bt-lib/src/main/java/unibo/btlib/ConnectToEmulatedBluetoothServerTask.java
+--- /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Laboratorio/Android/seiot2021-android-workspace/AndroidBluetoothEx/bt-lib/src/main/java/unibo/btlib/ConnectToEmulatedBluetoothServerTask.java	2021-02-10 16:35:30.000000000 +0100
++++ /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Progetti/Progetto-03/src/dam_mobileapp/bt-lib/src/main/java/unibo/btlib/ConnectToEmulatedBluetoothServerTask.java	2021-02-13 20:15:36.000000000 +0100
+@@ -20,10 +20,12 @@
+             socket = new Socket(InetAddress.getByName(C.emulator.HOST_IP), C.emulator.HOST_PORT);
+         } catch (IOException e) {
+             e.printStackTrace();
+-            try {
+-                socket.close( );
+-            } catch (IOException e1) {
+-                e1.printStackTrace();
++            if (socket != null) {
++                try {
++                    socket.close( );
++                } catch (Exception e1) {
++                    e1.printStackTrace();
++                }
+             }
+ 
+             return CONNECTION_CANCELED;
+diff -ruN /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Laboratorio/Android/seiot2021-android-workspace/AndroidBluetoothEx/bt-lib/src/main/java/unibo/btlib/EmulatedBluetoothChannel.java /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Progetti/Progetto-03/src/dam_mobileapp/bt-lib/src/main/java/unibo/btlib/EmulatedBluetoothChannel.java
+--- /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Laboratorio/Android/seiot2021-android-workspace/AndroidBluetoothEx/bt-lib/src/main/java/unibo/btlib/EmulatedBluetoothChannel.java	2021-02-10 16:35:30.000000000 +0100
++++ /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Progetti/Progetto-03/src/dam_mobileapp/bt-lib/src/main/java/unibo/btlib/EmulatedBluetoothChannel.java	2021-02-13 11:14:12.000000000 +0100
+@@ -8,6 +8,7 @@
+ import java.io.InputStream;
+ import java.io.OutputStream;
+ import java.net.Socket;
++import java.net.SocketException;
+ import java.util.Arrays;
+ 
+ import unibo.btlib.utils.C;
+@@ -33,6 +34,8 @@
+         private final InputStream inputStream;
+         private final OutputStream outputStream;
+ 
++        private volatile boolean isCancelled = false;
++
+         TcpWorker(Socket socket) {
+             this.socket = socket;
+ 
+@@ -55,7 +58,7 @@
+         }
+ 
+         public void run() {
+-            while (true) {
++            while (!isCancelled) {
+                 try {
+                     DataInputStream input = new DataInputStream(inputStream);
+ 
+@@ -75,8 +78,9 @@
+                             readbuffer = new StringBuffer();
+                         }
+                     }
+-                }
+-                catch(Exception e){
++                } catch (SocketException e) {
++                    this.cancel();
++                } catch(Exception e){
+                     e.printStackTrace();
+                 }
+             }
+@@ -98,6 +102,7 @@
+ 
+         public void cancel() {
+             try {
++                this.isCancelled = true;
+                 socket.close();
+             } catch (IOException e) {
+                 Log.e(C.LIB_TAG, "Could not close the connect socket", e);
+diff -ruN /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Laboratorio/Android/seiot2021-android-workspace/AndroidBluetoothEx/bt-lib/src/main/java/unibo/btlib/utils/C.java /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Progetti/Progetto-03/src/dam_mobileapp/bt-lib/src/main/java/unibo/btlib/utils/C.java
+--- /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Laboratorio/Android/seiot2021-android-workspace/AndroidBluetoothEx/bt-lib/src/main/java/unibo/btlib/utils/C.java	2021-02-10 16:35:30.000000000 +0100
++++ /Users/fabio/Library/Mobile Documents/com~apple~CloudDocs/_Università/III/IOT/Progetti/Progetto-03/src/dam_mobileapp/bt-lib/src/main/java/unibo/btlib/utils/C.java	2021-02-15 08:56:36.000000000 +0100
+@@ -13,7 +13,7 @@
+     }
+ 
+     public class emulator {
+-        public static final String HOST_IP = "10.0.2.2";
+-        public static final int HOST_PORT = 8080;
++        public static final String HOST_IP = "192.168.178.25";
++        public static final int HOST_PORT = 88;
+     }
+ }
