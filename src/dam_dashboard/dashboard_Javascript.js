@@ -88,7 +88,7 @@ function drawGraph(data) {
 	// Add the X Axis
 	svg.append("g")
 		.attr("transform", "translate(0," + height + ")")
-		.call(d3.axisBottom(x).ticks(30));
+		.call(d3.axisBottom(x).ticks(20));
 
 	// Add the Y Axis
 	svg.append("g")
