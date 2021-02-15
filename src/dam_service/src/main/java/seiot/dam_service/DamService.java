@@ -54,17 +54,13 @@ public class DamService {
 
             endpoint.publishHandler(message -> {
 
-                String messageContent = message.payload().toString(Charset.defaultCharset());
+                parseESPMessage(message.payload().toString(Charset.defaultCharset()));
 
-//                System.out.println(messageContent);
-
-                parseESPMessage(messageContent);
-
-                if (message.qosLevel() == MqttQoS.AT_LEAST_ONCE) {
-                    endpoint.publishAcknowledge(message.messageId());
-                } else if (message.qosLevel() == MqttQoS.EXACTLY_ONCE) {
-                    endpoint.publishReceived(message.messageId());
-                }
+//                if (message.qosLevel() == MqttQoS.AT_LEAST_ONCE) {
+//                    endpoint.publishAcknowledge(message.messageId());
+//                } else if (message.qosLevel() == MqttQoS.EXACTLY_ONCE) {
+//                    endpoint.publishReceived(message.messageId());
+//                }
 
             }).publishReleaseHandler(messageId -> {
                 endpoint.publishComplete(messageId);
@@ -72,11 +68,9 @@ public class DamService {
         })
         .listen(ar -> {
             if (ar.succeeded()) {
-
                 System.out.println("MQTT server is listening on port " + ar.result().actualPort());
             } else {
-
-                System.out.println("Error on starting the server");
+                System.out.println("Error on starting the MQTT server");
                 ar.cause().printStackTrace();
             }
         });
@@ -126,7 +120,6 @@ public class DamService {
     }
 
     private void parseESPMessage(String message) {
-//        System.out.println("From ESP: " + message);
 
         String arduinoMessage = "";
 
@@ -184,7 +177,6 @@ public class DamService {
         while(true) {
             if(serialChannel.isMsgAvailable()) {
                 String message = serialChannel.receiveMsg();
-//                System.out.println("From Arduino: " + message);
                 if (!Strings.isNullOrEmpty(message)) {
                     parseArduinoMessage(message);
                 }

@@ -21,26 +21,24 @@ void setup() {
   
 	systemState = NORMAL;
 
+	MQTTCommunicationTask* mqttCommunicationTask = new MQTTCommunicationTask();
+	mqttCommunicationTask->init(10000l);
+
 	Sonar* sonar = new Sonar(SONAR_TRIG_PIN, SONAR_ECHO_PIN);
-	SonarMeasureTask* sonarMeasureTask = new SonarMeasureTask(sonar);
+	SonarMeasureTask* sonarMeasureTask = new SonarMeasureTask(sonar, mqttCommunicationTask);
 	sonarMeasureTask->init(1000);
 
 	Led* greenLed = new Led(GREEN_LED_PIN);
 	BlinkTask* blinkTask = new BlinkTask(greenLed);
 	blinkTask->init(1000);
 
-	MQTTCommunicationTask* mqttCommunicationTask = new MQTTCommunicationTask();
-	mqttCommunicationTask->init(10000l);
-
-	scheduler.init(500);
+	scheduler.init(1000);
 
 	scheduler.addTask(sonarMeasureTask);
-	scheduler.addTask(blinkTask);
 	scheduler.addTask(mqttCommunicationTask);
+	scheduler.addTask(blinkTask);
 }
 
 void loop() {
-
 	scheduler.schedule();
-
 }

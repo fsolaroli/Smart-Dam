@@ -4,17 +4,19 @@
 #include "Task.h"
 #include "Sonar.h"
 #include "SystemState.h"
+#include "MQTTCommunicationTask.h"
 #include "Arduino.h"
 
 class SonarMeasureTask: public Task {
 
 	public:
-		SonarMeasureTask(Sonar* sonar);
+		SonarMeasureTask(Sonar* sonar, MQTTCommunicationTask* mqttCommunicationTask);
 		void init(int period);
 		void tick();
 
 	private:
 		Sonar* sonar;
+		MQTTCommunicationTask* mqttCommunicationTask;
 
 };
 
